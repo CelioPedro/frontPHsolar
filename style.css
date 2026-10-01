@@ -1,0 +1,187 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;800&display=swap');
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { overflow: hidden; background: #000; font-family: 'Inter', sans-serif; }
+
+#webgl-canvas { 
+    position: absolute; top: 0; left: 0; 
+    z-index: 1; display: block; 
+    width: 100vw; height: 100vh; 
+}
+
+/* ==========================================
+   CABECALHO GLASSMORPHISM (A PÍLULA)
+   ========================================== */
+.header-wrapper {
+    position: fixed;
+    top: 24px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 100;
+    width: 90%;
+    max-width: 1000px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* A Cápsula de Acrílico/Cristal (Baseado na referência do cubo) */
+.glass-pill {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    /* Reduzimos o padding da direita (de 36px para 16px) para que o botão branco fique perfeitamente aninhado na curva final do vidro */
+    padding: 16px 16px 16px 36px; 
+    
+    /* Quase totalmente transparente para o Sol brilhar forte quando passar por trás */
+    background: rgba(255, 255, 255, 0.02);
+    
+    /* Blur reduzido com alta saturação imitando cristal espesso */
+    backdrop-filter: blur(10px) saturate(140%) contrast(110%);           
+    -webkit-backdrop-filter: blur(10px) saturate(140%) contrast(110%);
+    
+    /* Remove a borda simples e arredonda */
+    border: none;
+    border-radius: 100px;
+    
+    /* O SEGREDO DO CUBO DA IMAGEM: Múltiplas camadas imitando a espessura do vidro */
+    box-shadow: 
+        0 15px 35px rgba(0, 0, 0, 0.2),               /* Sombra externa longa (flutuação) */
+        inset 0 0 0 1.5px rgba(255, 255, 255, 0.15),  /* O "fio de luz" duro na quina extrema */
+        inset 0 8px 20px rgba(255, 255, 255, 0.4),    /* O reflexo curvo e grosso brilhando no topo */
+        inset 0 -8px 20px rgba(0, 0, 0, 0.4),         /* A sombra espessa e escura na base (volume) */
+        inset 0 0 25px rgba(255, 255, 255, 0.05);     /* Um leve preenchimento de luz interna */
+}
+
+.logo {
+    display: flex;
+    flex-direction: column;
+    align-items: center; 
+    line-height: 1;
+}
+.logo strong {
+    font-weight: 800;
+    font-size: 1.4rem; 
+    letter-spacing: 0.5px; /* Reduzido drasticamente para deixar o PH SOLAR bem juntinho e forte */
+    color: #ff9d00;
+    margin-right: -0.5px; 
+    /* Acessibilidade: Sombra dupla para não sumir contra o sol */
+    text-shadow: 0 2px 10px rgba(0,0,0,0.5), 0 0 2px rgba(0,0,0,0.6);
+}
+.logo .subtitle {
+    font-size: 0.66rem; /* Aumentado 'bem pouquinho' (era 0.5rem) */
+    font-weight: 400;
+    letter-spacing: 0.3px; /* Reduzido para compensar o aumento da fonte e não ultrapassar a largura do título */
+    color: rgb(255, 255, 255);
+    text-transform: uppercase;
+    margin-top: 3px;
+    margin-right: -0.3px;
+    /* Acessibilidade: Sombra dupla */
+    text-shadow: 0 1px 4px rgba(0,0,0,0.6), 0 0 2px rgba(0,0,0,0.8);
+}
+
+/* Menu Central */
+.nav-links {
+    display: flex;
+    gap: 36px;
+    list-style: none;
+}
+
+.nav-links a {
+    text-decoration: none;
+    color: rgba(255, 255, 255, 0.95); /* Aumentei a opacidade para brigar melhor com o sol */
+    font-size: 0.95rem;
+    font-weight: 600; /* Mais encorpado para não quebrar a leitura */
+    transition: all 0.2s ease;
+    /* O Segredo do Contraste: Sombra difusa pra volume + Sombra concentrada para recorte */
+    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.6), 0 0 2px rgba(0, 0, 0, 0.8);
+}
+
+.nav-links a:hover {
+    color: #fff;
+    text-shadow: 0 2px 12px rgba(0, 0, 0, 0.8), 0 0 4px rgba(0, 0, 0, 0.9);
+}
+
+/* Botão CTA com Ícone Circular */
+.cta-button {
+    text-decoration: none;
+    background: #ffffff; /* Fundo sólido e limpo */
+    color: #0c2b12;      /* Verde quase grafite */
+    padding: 8px 8px 8px 24px; /* Padding assimétrico para englobar o círculo perfeitamente */
+    border-radius: 100px;
+    font-weight: 700;
+    font-size: 0.95rem;
+    display: flex;
+    align-items: center;
+    gap: 16px; /* Espaço entre o texto e o ícone */
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    transition: all 0.3s ease;
+}
+
+.cta-button span {
+    transition: color 0.3s ease;
+}
+
+.cta-button .icon-circle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    background: #0c2b12; /* Mantém a paleta grafite/chumbo escura */
+    color: #ffffff;
+    border-radius: 50%;
+    transition: all 0.3s ease;
+}
+
+.cta-button .icon-circle svg {
+    transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.cta-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(255, 102, 0, 0.25); /* Brilho laranja sutil */
+}
+
+.cta-button:hover span {
+    color: #FF6600; /* Texto acende com a cor da marca */
+}
+
+.cta-button:hover .icon-circle {
+    background: #FF6600; /* Círculo acende com a cor da marca */
+    transform: scale(1.05); /* Leve pulsação */
+}
+
+.cta-button:hover .icon-circle svg {
+    transform: translate(2px, -2px); /* A setinha voa suavemente para a diagonal no hover! */
+}
+
+
+/* ==========================================
+   TEXTO HERO ANTIGO
+   ========================================== */
+.ui-layer {
+    position: absolute;
+    top: 35%; /* Desci um pouco para não bater no menu */
+    left: 8%;
+    z-index: 10;
+    color: white;
+    pointer-events: none;
+    max-width: 600px;
+    text-shadow: 0 4px 20px rgba(0,0,0,0.9);
+}
+.ui-layer h1 { font-size: 3.5rem; margin-bottom: 1rem; font-weight: 800; letter-spacing: -1px; }
+.ui-layer p { font-size: 1.2rem; line-height: 1.6; opacity: 0.9; }
+
+/* ==========================================
+   RESPONSIVO (Celular)
+   ========================================== */
+@media (max-width: 768px) {
+    .nav-links { display: none; }
+    .glass-pill { padding: 12px 20px; }
+    .cta-button { padding: 10px 20px; font-size: 0.85rem; }
+    .header-wrapper { width: 95%; top: 16px; }
+    .ui-layer { top: 25%; left: 5%; width: 90%; }
+    .ui-layer h1 { font-size: 2.5rem; }
+}
