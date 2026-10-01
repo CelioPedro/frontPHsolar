@@ -23,6 +23,9 @@ body { overflow: hidden; background: #000; font-family: 'Inter', sans-serif; }
     display: flex;
     align-items: center;
     justify-content: center;
+    /* FIX: Previne o "pulo" de cor da GPU quando a animação de opacidade termina */
+    will-change: transform, opacity;
+    backface-visibility: hidden;
 }
 
 /* A Cápsula de Acrílico/Cristal (Baseado na referência do cubo) */
@@ -31,17 +34,17 @@ body { overflow: hidden; background: #000; font-family: 'Inter', sans-serif; }
     align-items: center;
     justify-content: space-between;
     width: 100%;
-    /* Reduzimos o padding da direita (de 36px para 16px) para que o botão branco fique perfeitamente aninhado na curva final do vidro */
     padding: 16px 16px 16px 36px; 
     
-    /* Quase totalmente transparente para o Sol brilhar forte quando passar por trás */
     background: rgba(255, 255, 255, 0.02);
     
-    /* Blur reduzido com alta saturação imitando cristal espesso */
     backdrop-filter: blur(10px) saturate(140%) contrast(110%);           
     -webkit-backdrop-filter: blur(10px) saturate(140%) contrast(110%);
     
-    /* Remove a borda simples e arredonda */
+    /* FIX: Mantém o cálculo do vidro trancado em uma camada de GPU contínua */
+    transform: translateZ(0);
+    backface-visibility: hidden;
+
     border: none;
     border-radius: 100px;
     
@@ -340,4 +343,41 @@ body { overflow: hidden; background: #000; font-family: 'Inter', sans-serif; }
     .inline-pill { padding: 4px 20px 4px 6px; gap: 12px; }
     .icon-badge-dark { width: 40px; height: 40px; }
     .pill-metric { font-size: 1.05rem; }
+}
+
+/* ==========================================
+   ANIMAÇÕES DE ENTRADA (INTRO)
+   ========================================== */
+.loading-intro .header-wrapper {
+    transform: translate(-50%, -30px);
+    opacity: 0;
+}
+.loading-intro .hero-content {
+    opacity: 0;
+}
+
+.header-wrapper, .hero-content {
+    transition: transform 2.5s cubic-bezier(0.2, 0.8, 0.2, 1), opacity 2.5s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.show-ui .header-wrapper {
+    transform: translate(-50%, 0);
+    opacity: 1;
+}
+.show-ui .hero-content {
+    opacity: 1;
+}
+
+.typing-container {
+    display: inline-block;
+    vertical-align: bottom;
+    clip-path: inset(0 100% 0 0); 
+}
+
+.start-typing .typing-container {
+    animation: typingReveal 2.0s steps(40, end) forwards;
+}
+
+@keyframes typingReveal {
+    to { clip-path: inset(0 0 0 0); }
 }

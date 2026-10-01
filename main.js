@@ -254,11 +254,28 @@ scene.add(sunSprite);
 // ==========================================
 // 4. INTERAÇÃO E ANIMAÇÃO
 // ==========================================
-const mouse = new THREE.Vector2(0, 0.5);
+const realMouse = new THREE.Vector2(-0.95, 0.65); // Default final (conforme marcação vermelha)
+const mouse = new THREE.Vector2(1.0, -0.8); // Start (horizonte na direita)
+
+const introState = { 
+    active: true, 
+    uiTriggered: false, 
+    typingTriggered: false 
+};
+
+// Easing function (suaviza a entrada e saída da curva)
+function easeInOutQuad(x) {
+    return x < 0.5 ? 2 * x * x : 1 - Math.pow(-2 * x + 2, 2) / 2;
+}
+
+// Bezier Curve (Cria o arco do sol baseado em 3 pontos)
+function getBezier(t, p0, p1, p2) {
+    return (1 - t) * (1 - t) * p0 + 2 * (1 - t) * t * p1 + t * t * p2;
+}
 
 window.addEventListener('mousemove', (e) => {
-    mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
-    mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
+    realMouse.x = (e.clientX / window.innerWidth) * 2 - 1;
+    realMouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
 });
 
 window.addEventListener('resize', () => {
@@ -268,20 +285,68 @@ window.addEventListener('resize', () => {
 });
 
 // CORES SUAVES E CORPORATIVAS
-const colorNoonZenith = new THREE.Color(0x3a8add);   // Azul céu super agradável
-const colorNoonHorizon = new THREE.Color(0xa4d3f5);  // Azul pálido/claro no horizonte
+const colorNoonZenith = new THREE.Color(0x3a8add);   
+const colorNoonHorizon = new THREE.Color(0xa4d3f5);  
 
-const colorSunsetZenith = new THREE.Color(0x306090); // Continua azul, apenas um pouco mais denso
-const colorSunsetHorizon = new THREE.Color(0xffc485); // Pêssego/Dourado super suave (nada de vermelho!)
+const colorSunsetZenith = new THREE.Color(0x306090); 
+const colorSunsetHorizon = new THREE.Color(0xffc485); 
 
 const colorNoonSun = new THREE.Color(0xffffff);
-const colorSunsetSun = new THREE.Color(0xffcc88); // Dourado suave
+const colorSunsetSun = new THREE.Color(0xffcc88);
 
 const clock = new THREE.Clock();
+
+// PRÉ-CONFIGURAÇÃO DO SOL PARA EVITAR GLITCH INICIAL
+// Coloca o sol imediatamente no ponto inicial (mouse = 1.0, -0.8) antes de renderizar
+sunLight.position.set(1.0 * 120, -0.8 * 50 + 10, -120);
+sunSprite.position.copy(sunLight.position);
 
 function animate() {
     requestAnimationFrame(animate);
     const time = clock.getElapsedTime();
+
+    // LÓGICA DA INTRODUÇÃO MAIS LENTA E COM ARCO (BEZIER)
+    if (introState.active) {
+        const SUN_DURATION = 4.0; // Deixamos o sol 1.5s mais lento
+        if (time < SUN_DURATION) {
+            let t = time / SUN_DURATION;
+            let easeT = easeInOutQuad(t); // Começa devagar, acelera e freia devagar
+
+            // Pontos da Curva Bezier (P0 = Início, P1 = Ponto de Controle, P2 = Fim)
+            const startP = { x: 1.1, y: -0.4 };
+            const controlP = { x: 0.5, y: 1.05 }; // O ponto de controle lá no alto que cria a curva
+            const endP = { x: -0.9, y: 0.7 }; // Fim, bem mais pra esquerda e alinhado com o redemoinho vermelho
+
+            mouse.x = getBezier(easeT, startP.x, controlP.x, endP.x);
+            mouse.y = getBezier(easeT, startP.y, controlP.y, endP.y);
+        } else {
+            // Fixa o sol no ponto B temporariamente
+            mouse.x = -0.9;
+            mouse.y = 0.7;
+
+            // Fase 2: Mostra a UI suavemente
+            if (!introState.uiTriggered) {
+                introState.uiTriggered = true;
+                document.body.classList.add('show-ui');
+                document.body.classList.remove('loading-intro');
+            }
+
+            // Fase 3: Efeito de digitação 
+            if (time > SUN_DURATION + 1.5 && !introState.typingTriggered) {
+                introState.typingTriggered = true;
+                document.body.classList.add('start-typing');
+            }
+
+            // Fase 4: Libera o mouse do usuário
+            if (time > SUN_DURATION + 4.0) {
+                introState.active = false;
+            }
+        }
+    } else {
+        // Interação normal suave com o mouse
+        mouse.x += (realMouse.x - mouse.x) * 0.05;
+        mouse.y += (realMouse.y - mouse.y) * 0.05;
+    }
 
     const targetX = mouse.x * 120; 
     const targetY = mouse.y * 50 + 10; 
@@ -290,18 +355,11 @@ function animate() {
     sunLight.position.y += (targetY - sunLight.position.y) * 0.05;
     sunLight.position.z = -120; 
 
-    // A MÁGICA DA ÓTICA PERFEITA:
-    // Para que o reflexo 3D forme uma linha reta vertical perfeitamente embaixo do sol na sua tela 2D,
-    // precisamos compensar a distorção de perspectiva. 
-    // Fórmula: (Distância da Câmera ao Chão) / (Distância Total da Câmera ao Sol)
-    // Z da Câmera = 22. Z do Sol = 120. Total = 142. (22 / 142 = 0.155)
+    // Compensação Ótica
     sunLight.target.position.x = sunLight.position.x * 0.155;
-
     sunSprite.position.copy(sunLight.position);
 
-    // O SEGREDO DO PÔR DO SOL ATRASADO:
-    // Mapeamos a transição para acontecer SOMENTE quando o mouse chega no terço final da tela
-    let timeOfDay = (mouse.y + 0.5) / 0.7; // Começa a transição no Y = 0.2 e termina no Y = -0.5
+    let timeOfDay = (mouse.y + 0.5) / 0.7; 
     timeOfDay = Math.max(0, Math.min(1, timeOfDay));
 
     const currentZenith = colorSunsetZenith.clone().lerp(colorNoonZenith, timeOfDay);
@@ -311,7 +369,7 @@ function animate() {
     skyDome.material.uniforms.colorBottom.value.copy(currentHorizon);
 
     scene.fog.color.copy(currentHorizon);
-    bounceLight.color.copy(currentHorizon); // Faz a luz de baixo acompanhar a cor do céu
+    bounceLight.color.copy(currentHorizon);
 
     const currentSunColor = colorSunsetSun.clone().lerp(colorNoonSun, timeOfDay);
     sunLight.color.copy(currentSunColor);
