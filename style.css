@@ -245,29 +245,48 @@ body { overflow: hidden; background: #000; font-family: 'Inter', sans-serif; }
 .inline-pill {
     display: flex;
     align-items: center;
-    background: #ffffff;
-    padding: 8px 24px;
+    /* Glassmorphism Premium */
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.6);
+    padding: 6px 32px 6px 6px; 
     border-radius: 100px;
-    gap: 14px;
-    color: #0c2b12;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+    gap: 18px;
+    color: #000000; /* Preto absoluto */
+    box-shadow: 0 12px 32px rgba(0,0,0,0.2), inset 0 2px 4px rgba(255,255,255,0.7);
+    white-space: nowrap; /* Impede que a pílula quebre em duas linhas */
 }
 
-.inline-pill svg {
-    color: #0c2b12;
+.icon-badge-dark {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 48px;
+    height: 48px;
+    background: #000000; /* Preto absoluto solicitado */
+    border-radius: 50%;
+    color: #ffffff; 
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    flex-shrink: 0; /* Impede que o círculo amasse e vire oval */
+}
+
+.icon-badge-dark svg {
+    color: #ffffff;
     transform: scale(1.1);
 }
 
 .pill-divider {
     width: 1px;
-    height: 18px;
-    background: #d0d5da;
+    height: 24px;
+    background: rgba(0, 0, 0, 0.15); /* Linha divisória neutra */
 }
 
 .pill-metric {
-    font-size: 1.15rem;
-    font-weight: 600;
+    font-size: 1.25rem; 
+    font-weight: 700;
     letter-spacing: -0.5px;
+    white-space: nowrap; /* Trava o texto em uma linha "-95% na conta" */
 }
 
 /* Linha inferior especial (A SUA ECONOMIA -> Callout) */
@@ -318,8 +337,7 @@ body { overflow: hidden; background: #000; font-family: 'Inter', sans-serif; }
     .hero-desc { width: 100%; font-size: 1rem; margin-bottom: 8px; }
     .title-row .paren { font-size: 3rem; }
     .sub-callout { margin-left: 0; margin-top: 8px; }
-    .icon-box { height: 36px; }
-    .tech-icon { width: 36px; }
-    .eco-icon { padding: 0 10px 0 8px; }
-    .pill-metric { font-size: 1rem; }
+    .inline-pill { padding: 4px 20px 4px 6px; gap: 12px; }
+    .icon-badge-dark { width: 40px; height: 40px; }
+    .pill-metric { font-size: 1.05rem; }
 }
